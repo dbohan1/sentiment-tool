@@ -6,9 +6,11 @@
   <title>Live Rating Average</title>
 </head>
 <body>
-  <h2>Rate from 1 (Worst) to 5 (Best):</h2>
+  <h1>Community Sprint Sentiment</h1>
+  <h2>Rate how you fell the Sprint went from 1 (Worst) to 5 (Best):</h2>
   <input type="number" id="rating" min="1" max="5">
   <button onclick="sendRating()">Submit</button>
+  <button onclick="clearAverage()">Clear Average</button>
   <p>Average Rating: <span id="average">0</span></p>
 
   <script>
@@ -29,6 +31,10 @@
       } else {
         alert("Please enter a value between 1 and 5");
       }
+    }
+	
+	function clearAverage() {
+      ws.send(JSON.stringify({ type: 'clear' }));
     }
   </script>
 </body>

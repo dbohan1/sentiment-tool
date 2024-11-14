@@ -17,11 +17,25 @@ let ratings = [];
 
 wss.on('connection', (ws) => {
   ws.on('message', (message) => {
-    const rating = parseInt(message);
-    if (rating >= 1 && rating <= 5) {
-      ratings.push(rating);
-      const average = ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
-      broadcastAverage(average);
+    let parsedMessage;
+    try {
+      parsedMessage = JSON.parse(message);
+    } catch (e) {
+      parsedMessage = message;
+    }
+
+    if (typeof parsedMessage === 'number') {
+      // Handle rating submission
+      const rating = parseInt(parsedMessage);
+      if (rating >= 1 && rating <= 5) {
+        ratings.push(rating);
+        const average = calculateAverage();
+        broadcastAverage(average);
+      }
+    } else if (parsedMessage.type === 'clear') {
+      // Handle clearing the average
+      ratings = [];
+      broadcastAverage(0);
     }
   });
 
