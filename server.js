@@ -1,13 +1,16 @@
+const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
+const path = require('path');
 
+const app = express();
 const port = process.env.PORT || 8080;
-const server = http.createServer((req, res) => {
-  // Simple health check for Render
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('OK');
-});
 
+// Serve static files from the "public" directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Create HTTP server and bind WebSocket to it
+const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 let ratings = [];
