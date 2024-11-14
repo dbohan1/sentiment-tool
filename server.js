@@ -2,7 +2,12 @@ const http = require('http');
 const WebSocket = require('ws');
 
 const port = process.env.PORT || 8080;
-const server = http.createServer();
+const server = http.createServer((req, res) => {
+  // Simple health check for Render
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('OK');
+});
+
 const wss = new WebSocket.Server({ server });
 
 let ratings = [];
@@ -33,7 +38,6 @@ function calculateAverage() {
   return ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
 }
 
-// Listen on the assigned port and 0.0.0.0
 server.listen(port, '0.0.0.0', () => {
   console.log(`Server is listening on port ${port}`);
 });
