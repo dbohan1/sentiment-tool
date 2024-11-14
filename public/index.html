@@ -64,11 +64,11 @@
       votesList.innerHTML = ''; // Clear the current list
       for (const [clientId, vote] of Object.entries(votes)) {
         const li = document.createElement('li');
-        li.textContent = `Client ${clientId}: ${vote}`;
+        li.textContent = `Client ${clientId}: VOTED`;
         votesList.appendChild(li);
       }
     }
   </script>
 </body>
-<footer><small>https://github.com/dbohan1/sentiment-tool</small></footer>
+<footer><small>https://github.com/dbohan1/sentiment-tool</footer>
 </html>
