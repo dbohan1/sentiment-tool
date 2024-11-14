@@ -1,9 +1,13 @@
+const http = require('http');
 const WebSocket = require('ws');
-const server = new WebSocket.Server({ port: 8080 });
+
+const port = process.env.PORT || 8080;
+const server = http.createServer();
+const wss = new WebSocket.Server({ server });
 
 let ratings = [];
 
-server.on('connection', (ws) => {
+wss.on('connection', (ws) => {
   ws.on('message', (message) => {
     const rating = parseInt(message);
     if (rating >= 1 && rating <= 5) {
@@ -17,7 +21,7 @@ server.on('connection', (ws) => {
 });
 
 function broadcastAverage(average) {
-  server.clients.forEach((client) => {
+  wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify({ type: 'average', average }));
     }
@@ -29,4 +33,6 @@ function calculateAverage() {
   return ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
 }
 
-console.log('WebSocket server is running on ws://localhost:8080');
+server.listen(port, () => {
+  console.log(`Server is listening on port ${port}`);
+});

@@ -12,7 +12,7 @@
   <p>Average Rating: <span id="average">0</span></p>
 
   <script>
-    const ws = new WebSocket('ws://localhost:8080');
+    const ws = new WebSocket('ws://sentiment-tool.onrender.com');
     const averageDisplay = document.getElementById('average');
 
     ws.onmessage = (event) => {
