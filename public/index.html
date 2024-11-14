@@ -3,42 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Rating Average</title>
+  <title>Rating Tool</title>
+  <style>
+    #clients-votes {
+      margin-top: 20px;
+    }
+    #clients-votes ul {
+      list-style-type: none;
+      padding: 0;
+    }
+  </style>
 </head>
 <body>
-  <h1>Community Sprint Sentiment</h1>
-  <h2>Rate how you felt the Sprint went from 1 (Worst) to 5 (Best):</h2>
-  <input type="number" id="rating" min="1" max="5">
-  <button onclick="sendRating()">Submit</button>
+  <h1>Rate from 1 (Worst) to 5 (Best)</h1>
+  <input type="number" id="rating" min="1" max="5" placeholder="Enter rating (1-5)">
+  <button onclick="submitRating()">Submit Rating</button>
   <button onclick="clearAverage()">Clear Average</button>
-  <p>Average Rating: <span id="average">0</span></p>
+  <h2>Average Rating: <span id="average">0</span></h2>
+
+  <div id="clients-votes">
+    <h3>Client Ratings:</h3>
+    <ul id="votes-list">
+      <!-- Client ratings will be listed here -->
+    </ul>
+  </div>
 
   <script>
-    const ws = new WebSocket('wss://sentiment-tool.onrender.com');
-    const averageDisplay = document.getElementById('average');
+    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    const ws = new WebSocket(`${protocol}sentiment-tool.onrender.com`);
 
+    // When a message is received from the server
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.type === 'average') {
-        averageDisplay.textContent = data.average.toFixed(2);
+        document.getElementById('average').textContent = data.average.toFixed(2);
+      } else if (data.type === 'votes') {
+        updateClientVotes(data.votes);
       }
     };
 
-    function sendRating() {
+    function submitRating() {
       const rating = document.getElementById('rating').value;
       if (rating >= 1 && rating <= 5) {
         ws.send(rating);
+        document.getElementById('rating').value = ''; // Clear the input
       } else {
-        alert("Please enter a value between 1 and 5");
+        alert("Please enter a rating between 1 and 5.");
       }
     }
-	
-	function clearAverage() {
+
+    function clearAverage() {
       ws.send(JSON.stringify({ type: 'clear' }));
+    }
+
+    // Update the list of client votes
+    function updateClientVotes(votes) {
+      const votesList = document.getElementById('votes-list');
+      votesList.innerHTML = ''; // Clear the current list
+      for (const [clientId, vote] of Object.entries(votes)) {
+        const li = document.createElement('li');
+        li.textContent = `Client ${clientId}: ${vote}`;
+        votesList.appendChild(li);
+      }
     }
   </script>
 </body>
-<footer>
- <a href="https://github.com/dbohan1/sentiment-tool">Code</a>
-</footer>
 </html>

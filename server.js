@@ -14,8 +14,19 @@ const wss = new WebSocket.Server({ server });
 
 // Store each client's rating
 const clientRatings = new Map();
+let clientCounter = 1; // To assign unique IDs to clients
 
 wss.on('connection', (ws) => {
+  const clientId = clientCounter++;
+  console.log(`Client ${clientId} connected`);
+
+  // Send the current average to the new client
+  ws.send(JSON.stringify({ type: 'average', average: calculateAverage() }));
+
+  // Send the current client votes to the new client
+  ws.send(JSON.stringify({ type: 'votes', votes: getClientVotes() }));
+
+  // Handle incoming messages from the client
   ws.on('message', (message) => {
     let parsedMessage;
     try {
@@ -29,25 +40,26 @@ wss.on('connection', (ws) => {
       const rating = parseInt(parsedMessage);
       if (rating >= 1 && rating <= 5) {
         // Update the client's rating
-        clientRatings.set(ws, rating);
+        clientRatings.set(clientId, rating);
         const average = calculateAverage();
         broadcastAverage(average);
+        broadcastClientVotes();
       }
     } else if (parsedMessage.type === 'clear') {
       // Handle clearing the average
       clientRatings.clear();
       broadcastAverage(0);
+      broadcastClientVotes();
     }
   });
 
-  // Send initial average when client connects
-  ws.send(JSON.stringify({ type: 'average', average: calculateAverage() }));
-
   // Remove the client's rating when they disconnect
   ws.on('close', () => {
-    clientRatings.delete(ws);
+    clientRatings.delete(clientId);
+    console.log(`Client ${clientId} disconnected`);
     const average = calculateAverage();
     broadcastAverage(average);
+    broadcastClientVotes();
   });
 });
 
@@ -57,6 +69,23 @@ function broadcastAverage(average) {
       client.send(JSON.stringify({ type: 'average', average }));
     }
   });
+}
+
+function broadcastClientVotes() {
+  const votes = getClientVotes();
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ type: 'votes', votes }));
+    }
+  });
+}
+
+function getClientVotes() {
+  const votes = {};
+  clientRatings.forEach((rating, clientId) => {
+    votes[clientId] = rating;
+  });
+  return votes;
 }
 
 function calculateAverage() {
