@@ -79,7 +79,7 @@
       votesList.innerHTML = ''; // Clear the current list
       for (const [clientId, vote] of Object.entries(votes)) {
         const li = document.createElement('li');
-        li.textContent = `Client ${clientId}: ${vote}`;
+        li.textContent = `Client ${clientId}: Voted!`;
         votesList.appendChild(li);
       }
     }
