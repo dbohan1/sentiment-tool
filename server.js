@@ -9,11 +9,11 @@ const port = process.env.PORT || 8080;
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Create HTTP server and bind WebSocket to it
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-let ratings = [];
+// Store each client's rating
+const clientRatings = new Map();
 
 wss.on('connection', (ws) => {
   ws.on('message', (message) => {
@@ -28,18 +28,27 @@ wss.on('connection', (ws) => {
       // Handle rating submission
       const rating = parseInt(parsedMessage);
       if (rating >= 1 && rating <= 5) {
-        ratings.push(rating);
+        // Update the client's rating
+        clientRatings.set(ws, rating);
         const average = calculateAverage();
         broadcastAverage(average);
       }
     } else if (parsedMessage.type === 'clear') {
       // Handle clearing the average
-      ratings = [];
+      clientRatings.clear();
       broadcastAverage(0);
     }
   });
 
+  // Send initial average when client connects
   ws.send(JSON.stringify({ type: 'average', average: calculateAverage() }));
+
+  // Remove the client's rating when they disconnect
+  ws.on('close', () => {
+    clientRatings.delete(ws);
+    const average = calculateAverage();
+    broadcastAverage(average);
+  });
 });
 
 function broadcastAverage(average) {
@@ -51,6 +60,7 @@ function broadcastAverage(average) {
 }
 
 function calculateAverage() {
+  const ratings = Array.from(clientRatings.values());
   if (ratings.length === 0) return 0;
   return ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
 }
