@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rating Tool</title>
   <style>
+    #smiley-container {
+      margin-top: 20px;
+    }
+    #smiley-container img {
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+      margin: 5px;
+    }
     #clients-votes {
       margin-top: 20px;
     }
@@ -18,8 +27,16 @@
   <h1>Community Sprint Sentiment</h1>
   <h3>Rate how you felt the sprint went from 1 (Worst) to 5 (Best)</h3>
   <h4>And I guess 3 is like average or something</h4>
-  <input type="number" id="rating" min="1" max="5" placeholder="Enter rating (1-5)">
-  <button onclick="submitRating()">Submit Rating</button>
+
+  <!-- Smiley face rating options -->
+  <div id="smiley-container">
+    <img src="images/angry.png" alt="1 - Angry" onclick="submitRating(1)">
+    <img src="images/sad.png" alt="2 - Sad" onclick="submitRating(2)">
+    <img src="images/neutral.png" alt="3 - Neutral" onclick="submitRating(3)">
+    <img src="images/happy.png" alt="4 - Happy" onclick="submitRating(4)">
+    <img src="images/very-happy.png" alt="5 - Very Happy" onclick="submitRating(5)">
+  </div>
+
   <button onclick="clearAverage()">Clear Average</button>
   <h2>Average Rating: <span id="average">0</span></h2>
 
@@ -44,13 +61,11 @@
       }
     };
 
-    function submitRating() {
-      const rating = document.getElementById('rating').value;
+    function submitRating(rating) {
       if (rating >= 1 && rating <= 5) {
         ws.send(rating);
-        document.getElementById('rating').value = ''; // Clear the input
       } else {
-        alert("Please enter a rating between 1 and 5.");
+        alert("Please select a valid rating.");
       }
     }
 
@@ -64,7 +79,7 @@
       votesList.innerHTML = ''; // Clear the current list
       for (const [clientId, vote] of Object.entries(votes)) {
         const li = document.createElement('li');
-        li.textContent = `Client ${clientId}: VOTED`;
+        li.textContent = `Client ${clientId}: ${vote}`;
         votesList.appendChild(li);
       }
     }
