@@ -33,6 +33,7 @@ function calculateAverage() {
   return ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
 }
 
-server.listen(port, () => {
+// Listen on the assigned port and 0.0.0.0
+server.listen(port, '0.0.0.0', () => {
   console.log(`Server is listening on port ${port}`);
 });
