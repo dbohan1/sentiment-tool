@@ -145,39 +145,57 @@
   <footer>https://github.com/dbohan1/sentiment-tool</footer>
 
   <script>
-    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-    const ws = new WebSocket(`${protocol}sentiment-tool.onrender.com`);
+  const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+  const ws = new WebSocket(`${protocol}sentiment-tool.onrender.com`);
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'average') {
-        document.getElementById('average').textContent = data.average.toFixed(2);
-      } else if (data.type === 'votes') {
-        updateClientVotes(data.votes);
-      }
-    };
-
-    function submitRating(rating) {
-      if (rating >= 1 && rating <= 5) {
-        ws.send(rating);
-      } else {
-        alert("Please select a valid rating.");
-      }
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.type === 'average') {
+      const average = data.average;
+      const color = calculateColor(average);
+      const averageElement = document.getElementById('average');
+      averageElement.textContent = average.toFixed(2);
+      averageElement.style.color = color;
+    } else if (data.type === 'votes') {
+      updateClientVotes(data.votes);
     }
+  };
 
-    function clearAverage() {
-      ws.send(JSON.stringify({ type: 'clear' }));
+  function submitRating(rating) {
+    if (rating >= 1 && rating <= 5) {
+      ws.send(rating);
+    } else {
+      alert("Please select a valid rating.");
     }
+  }
 
-    function updateClientVotes(votes) {
-      const votesList = document.getElementById('votes-list');
-      votesList.innerHTML = '';
-      for (const [clientId, vote] of Object.entries(votes)) {
-        const li = document.createElement('li');
-        li.textContent = `Client ${clientId}: VOTED!`;
-        votesList.appendChild(li);
-      }
+  function clearAverage() {
+    ws.send(JSON.stringify({ type: 'clear' }));
+  }
+
+  function updateClientVotes(votes) {
+    const votesList = document.getElementById('votes-list');
+    votesList.innerHTML = '';
+    for (const [clientId, vote] of Object.entries(votes)) {
+      const li = document.createElement('li');
+      li.textContent = `Client ${clientId} voted`;
+      votesList.appendChild(li);
     }
-  </script>
+  }
+
+  function calculateColor(value) {
+    // Ensure the value is within the 1-5 range
+    const clampedValue = Math.min(Math.max(value, 1), 5);
+
+    // Map value from 1-5 to 0-1
+    const normalizedValue = (clampedValue - 1) / 4;
+
+    // Interpolate between red and green
+    const red = Math.round(255 * (1 - normalizedValue));
+    const green = Math.round(255 * normalizedValue);
+    return `rgb(${red}, ${green}, 0)`;
+  }
+</script>
+
 </body>
 </html>
