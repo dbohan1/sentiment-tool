@@ -174,7 +174,7 @@
       votesList.innerHTML = '';
       for (const [clientId, vote] of Object.entries(votes)) {
         const li = document.createElement('li');
-        li.textContent = `Client ${clientId}: ${vote}`;
+        li.textContent = `Client ${clientId}: VOTED!`;
         votesList.appendChild(li);
       }
     }
