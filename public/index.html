@@ -3,55 +3,151 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rating Tool</title>
+  <title>Community Sprint Sentiment</title>
   <style>
+    /* Base Reset */
+    body, h1, h2, h3, h4, p, ul {
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      color: #4a4a4a;
+    }
+
+    h3, h4 {
+      margin-bottom: 15px;
+      color: #6c6c6c;
+    }
+
+    /* Smiley Container */
     #smiley-container {
-      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      margin: 20px 0;
     }
+
     #smiley-container img {
-      width: 50px;
-      height: 50px;
+      width: 60px;
+      height: 60px;
       cursor: pointer;
-      margin: 5px;
+      transition: transform 0.3s ease;
     }
+
+    #smiley-container img:hover {
+      transform: scale(1.2);
+    }
+
+    /* Buttons */
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #4caf50;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    /* Votes Section */
     #clients-votes {
       margin-top: 20px;
+      text-align: left;
     }
+
+    #clients-votes h3 {
+      margin-bottom: 10px;
+      color: #4a4a4a;
+    }
+
     #clients-votes ul {
       list-style-type: none;
       padding: 0;
     }
+
+    #clients-votes li {
+      background: #f4f4f9;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+
+    /* Average Display */
+    h2 span {
+      font-size: 2rem;
+      color: #4caf50;
+      font-weight: bold;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 20px;
+      font-size: 0.8rem;
+      color: #bbb;
+    }
   </style>
 </head>
 <body>
-  <h1>Community Sprint Sentiment</h1>
-  <h3>Rate how you felt the sprint went from 1 (Worst) to 5 (Best)</h3>
-  <h4>And I guess 3 is like average or something</h4>
+  <div class="container">
+    <h1>Community Sprint Sentiment</h1>
+    <h3>Rate how you felt the sprint went from 1 (Worst) to 5 (Best)</h3>
+    <h4>And I guess 3 is like average or something</h4>
 
-  <!-- Smiley face rating options -->
-  <div id="smiley-container">
-    <img src="images/angry.png" alt="1 - Angry" onclick="submitRating(1)">
-    <img src="images/sad.png" alt="2 - Sad" onclick="submitRating(2)">
-    <img src="images/neutral.png" alt="3 - Neutral" onclick="submitRating(3)">
-    <img src="images/happy.png" alt="4 - Happy" onclick="submitRating(4)">
-    <img src="images/very-happy.png" alt="5 - Very Happy" onclick="submitRating(5)">
+    <!-- Smiley face rating options -->
+    <div id="smiley-container">
+      <img src="images/angry.png" alt="1 - Angry" onclick="submitRating(1)">
+      <img src="images/sad.png" alt="2 - Sad" onclick="submitRating(2)">
+      <img src="images/neutral.png" alt="3 - Neutral" onclick="submitRating(3)">
+      <img src="images/happy.png" alt="4 - Happy" onclick="submitRating(4)">
+      <img src="images/very-happy.png" alt="5 - Very Happy" onclick="submitRating(5)">
+    </div>
+
+    <button onclick="clearAverage()">Clear Average</button>
+    <h2>Average Rating: <span id="average">0</span></h2>
+
+    <div id="clients-votes">
+      <h3>Client Ratings:</h3>
+      <ul id="votes-list">
+        <!-- Client ratings will be listed here -->
+      </ul>
+    </div>
   </div>
-
-  <button onclick="clearAverage()">Clear Average</button>
-  <h2>Average Rating: <span id="average">0</span></h2>
-
-  <div id="clients-votes">
-    <h3>Client Ratings:</h3>
-    <ul id="votes-list">
-      <!-- Client ratings will be listed here -->
-    </ul>
-  </div>
+  <footer>https://github.com/dbohan1/sentiment-tool</footer>
 
   <script>
     const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
     const ws = new WebSocket(`${protocol}sentiment-tool.onrender.com`);
 
-    // When a message is received from the server
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.type === 'average') {
@@ -73,17 +169,15 @@
       ws.send(JSON.stringify({ type: 'clear' }));
     }
 
-    // Update the list of client votes
     function updateClientVotes(votes) {
       const votesList = document.getElementById('votes-list');
-      votesList.innerHTML = ''; // Clear the current list
+      votesList.innerHTML = '';
       for (const [clientId, vote] of Object.entries(votes)) {
         const li = document.createElement('li');
-        li.textContent = `Client ${clientId}: Voted!`;
+        li.textContent = `Client ${clientId}: ${vote}`;
         votesList.appendChild(li);
       }
     }
   </script>
 </body>
-<footer><small>https://github.com/dbohan1/sentiment-tool</footer>
 </html>
